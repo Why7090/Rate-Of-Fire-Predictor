@@ -1,0 +1,9 @@
+{
+  "Authors": "Authors include MagicalSmalrusWalrusJones and Why7090",
+  "Version": "00000000-0000-0000-0000-000000000000",
+  "ComponentId": {
+    "Guid": "ec0a9d27-c6dc-4929-b49b-2bdf0a251e74",
+    "Name": "Rate Of Fire Predictor"
+  },
+  "Description": "Add some UI hooks that make autoloaders predict your cannons actual rate of fire."
+}
