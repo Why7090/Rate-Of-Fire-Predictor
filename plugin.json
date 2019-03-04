@@ -1,7 +1,7 @@
 {
 	"name": "RateOfFirePredictor",
 	"version": "0.1.0",
-	"gameversion": "2.3.2",
+	"gameversion": "2.4.0",
 	"filename": "RateOfFirePredictor.dll",
 	"depends": [],
 	"conflicts": []
