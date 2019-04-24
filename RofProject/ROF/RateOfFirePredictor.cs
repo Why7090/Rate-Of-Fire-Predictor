@@ -151,37 +151,37 @@ namespace ROF
             var Node = focus.Node;
             var barrelSystem = focus.BarrelSystem as CannonMultiBarrelSystem;
 
-            string GetLoaderROF(AdvCannonFiringPiece fp)
+            string GetLoaderROF()
             {
                 float culmROF = 0;
-                if (fp.Node.ShellRacks.Racks.Count > 1)
+                if (Node.ShellRacks.Racks.Count > 1)
                 {
-                    foreach (var thisRack in fp.Node.ShellRacks.Racks)
+                    foreach (var thisRack in Node.ShellRacks.Racks)
                     {
-                        Debug.Log("[Walrus Shells Ballistic Madness] Checking For Loaded Shell.");
+                        //Debug.Log("[Walrus Shells Ballistic Madness] Checking For Loaded Shell.");
 
                         if (thisRack.LoadedShell != null)
                         {
-                            Debug.Log("[Walrus Shells Ballistic Madness] Calculating Load Time.");
+                            //Debug.Log("[Walrus Shells Ballistic Madness] Calculating Load Time.");
 
                             float loadtime = ShellConstants.LoadTimeForShellVolume(new ShellModel_Propellant(thisRack.LoadedShell).GetTotalVolume());
 
-                            Debug.Log("[Walrus Shells Ballistic Madness] Is it a beltfed rack?");
+                            //Debug.Log("[Walrus Shells Ballistic Madness] Is it a beltfed rack?");
 
                             if (thisRack as BeltFeedShellRackModel != null)
                             {
                                 BeltFeedShellRackModel belty = thisRack as BeltFeedShellRackModel;
-                                Debug.Log("[Walrus Shells Ballistic Madness] Doing Beltfed Math?");
+                                //Debug.Log("[Walrus Shells Ballistic Madness] Doing Beltfed Math?");
                                 culmROF += 60 / loadtime / belty.LoadingTimeComplexityModifier / 0.2f;
                             }
                             else
                             {
-                                Debug.Log("[Walrus Shells Ballistic Madness] Is it a standard rack?");
+                                //Debug.Log("[Walrus Shells Ballistic Madness] Is it a standard rack?");
 
                                 if (thisRack as ShellRackModel != null)
                                 {
                                     ShellRackModel standardRack = thisRack as ShellRackModel;
-                                    Debug.Log("[Walrus Shells Ballistic Madness] Doing Normal Math?");
+                                    //Debug.Log("[Walrus Shells Ballistic Madness] Doing Normal Math?");
                                     culmROF += 60 / loadtime / standardRack.MultipleDirectionsSpeedUpFactor() / standardRack.LoadingTimeComplexityModifier / Rounding.R2(Mathf.Min(1f / Mathf.Sqrt(standardRack.LengthCapacity), 1f));
                                 }
                             }
@@ -191,9 +191,9 @@ namespace ROF
                 return $"Semi-Stable RoF Estimation: <b>{culmROF:0.##} rounds/min</b>";
             }
 
-            string GetBarrelROF(AdvCannonFiringPiece fp)
+            string GetBarrelROF()
             {
-                var nextShell = fp.Node.ShellRacks.GetNextShell(false);
+                var nextShell = Node.ShellRacks.GetNextShell(false);
                 if (nextShell == null)
                     return "Burst RoF: No shell loaded";
                 float baseCooldown = ShellConstants.CooldownTimeFromVolumeOfPropellant(nextShell.Propellant.GetNormalisedVolumeOfPropellant());
@@ -202,25 +202,25 @@ namespace ROF
                 return $"Burst RoF: <b>{rof:0.##} rounds/min</b>";
             }
 
-            string GetRecoilInfo(AdvCannonFiringPiece fp)
+            string GetRecoilInfo()
             {
-                float refresh = fp.Node.HydraulicRefresh;
-                float capacity = fp.Node.HydraulicCapacity;
-                float dt = 60 / fp.Data.MaxFireRatePerMinute;
+                float refresh = Node.HydraulicRefresh;
+                float capacity = Node.HydraulicCapacity;
+                float dt = 60 / focus.Data.MaxFireRatePerMinute;
 
-                var shell = fp.Node.ShellRacks.GetNextShell(false);
+                var shell = Node.ShellRacks.GetNextShell(false);
                 if (shell == null)
                     return "No shell loaded, recoil information unavailable";
 
-                float overclockFactor = Mathf.Max(fp.Data.CooldownOverClock + 1, 1);
+                float overclockFactor = Mathf.Max(focus.Data.CooldownOverClock + 1, 1);
 
-                float railReloadTime = fp.RailReloadTime();
+                float railReloadTime = focus.RailReloadTime();
                 float railFraction = (railReloadTime < float.PositiveInfinity && railReloadTime > 0)
                     ? Mathf.Clamp01(dt / railReloadTime) : 0;
 
-                float total = overclockFactor * fp.GetRecoilForce(
+                float total = overclockFactor * focus.GetRecoilForce(
                     shell.Propellant.GetNormalisedVolumeOfPropellant(),
-                    fp.RailgunDraw() * railFraction);
+                    focus.RailgunDraw() * railFraction);
 
                 float reduction = Math.Min(refresh * dt, capacity);
                 float actual = total - reduction;
@@ -230,10 +230,14 @@ namespace ROF
                     $"Maximum recoil reduction is {capacity:0} and recovers {refresh:0.#} per second";
             }
 
-            string GetAmmoInfo(AdvCannonFiringPiece fp)
+            string GetAmmoInfo()
             {
-                float rof = fp.Data.MaxFireRatePerMinute / 60;
-                float cost = fp.Node.ShellRacks.GetNextShell(false).AmmoCost.GetAmmoCost();
+                var shell = Node.ShellRacks.GetNextShell(false);
+                if (shell == null)
+                    return "Ammo Consumption: No shell loaded";
+
+                float rof = focus.Data.MaxFireRatePerMinute / 60;
+                float cost = shell.AmmoCost.GetAmmoCost();
                 return $"Ammo Consumption: <b>{cost * rof:0} ammo/s</b>";
             }
 
@@ -246,19 +250,23 @@ namespace ROF
             self.CreateHeader("Rate Of Fire Predictor", new ToolTip(""));
             var seg1 = self.CreateStandardSegment();
 
-            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetLoaderROF(x)), "Prediction of the cannon's actual rate of fire."));
+            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetLoaderROF()),
+                "Prediction of the cannon's actual rate of fire."));
 
-            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetBarrelROF(x)), "The maximum burst RoF of the cannon without overclocking. Based on cooldown time."));
+            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetBarrelROF()),
+                "The maximum burst RoF of the cannon without overclocking. Based on cooldown time."));
 
-            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetRecoilInfo(x)), "Hydraulic Recoil Absorber data:\n\n" +
+            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetRecoilInfo()),
+                "Hydraulic Recoil Absorber data:\n\n" +
                 "Length	║ Capacity	│ Refresh Rate\n" +
-                "1m		║ 1250		│ 10000\n" +
-                "2m		║ 5000		│ 15874\n" +
-                "4m		║ 20000		│ 25198\n" +
-                "6m		║ 45000		│ 33019\n" +
-                "8m		║ 80000		│ 40000"));
+                "1m	║ 1250		│ 10000\n" +
+                "2m	║ 5000		│ 15874\n" +
+                "4m	║ 20000		│ 25198\n" +
+                "6m	║ 45000		│ 33019\n" +
+                "8m	║ 80000		│ 40000"));
 
-            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetAmmoInfo(x)), "The ammunition requirement of the cannon."));
+            seg1.AddInterpretter(SubjectiveDisplay<AdvCannonFiringPiece>.Quick(focus, M.m<AdvCannonFiringPiece>(x => GetAmmoInfo()),
+                "The ammunition requirement of the cannon at current RoF."));
         }
     }
 }
