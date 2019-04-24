@@ -1,10 +1,9 @@
 #Installation Requirements:
 
-This was compiled to target the FTD 2.3.1.9 version, which is currently the steam DevTest version, whose C# framework is 4.6.
+This was compiled to target the FTD 2.4.3.2 version, which is currently the steam DevTest version, whose C# framework is 4.6.
 This version does not depend on any other mod.
 
-It may be incompatible with ProtecTechTools. If you have to keep ProtecTechTools, the compatible version can be found here:
-https://forum.fromthedepthsgame.com/showthread.php?tid=37388
+It may be incompatible with ProtecTechTools.
 
 
 #Description:

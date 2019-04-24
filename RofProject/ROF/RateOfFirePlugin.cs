@@ -12,15 +12,6 @@ namespace ROF
     // This is required, and provides necessary information to FTD, and provides some important hooks.
     public class ROFPlugin : GamePlugin
     {
-        //public static Dictionary<int, float> culmROF = new Dictionary<int, float>();
-
-        /// <summary>
-        /// This Delimiter is Ooalroos, my best attempt at converting "Walrus" to a number.
-        /// </summary>
-        /// <param name="DelimiterLevel"></param>
-        /// <returns></returns>
-        private const int THIS_MOD_UNIQUE_DELIMITER = 00412105;
-
         public void OnLoad()
         {
             var harmony = HarmonyInstance.Create("com.walrusjones.rof");
@@ -54,6 +45,6 @@ namespace ROF
         public string name => "ROF UI";
 
         // Also required.
-        public Version version => new Version("0.1.0");
+        public Version version => new Version("0.2.1");
     }
 }
